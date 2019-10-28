@@ -15,9 +15,6 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include<time.h>
-
-#define PORT "3490"  // the port users will be connecting to
-#define MAX_FILE_NAME 100
 #define BACKLOG 10   // how many pending connections queue will hold
 
 void sigchld_handler(int s)
@@ -41,14 +38,16 @@ void *get_in_addr(struct sockaddr *sa)
     return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
-
-//get random quote
-/* Returns a random line (w/o newline) from the file provided */
-char* get_random_quote(const char *filename, size_t *len) {
+//check file
+check_file(const char *filename){
     FILE *f;
-    int lines=1;
+    int lines=0;
     char ch;
     f = fopen(filename, "r");
+    if(f==NULL){
+        perror("Error while reading file!");
+        exit(1);
+    }
 
     //count number of lines in the text file
     while((ch=fgetc(f))!=EOF)
@@ -56,6 +55,31 @@ char* get_random_quote(const char *filename, size_t *len) {
         if (ch=='\n') { lines++; }
     }
 
+    if(lines==0){
+        perror("Empty file!");
+        exit(1);
+    }
+}
+
+
+//get random quote
+/* Returns a random line (w/o newline) from the file provided */
+char* get_random_quote(const char *filename, size_t *len) {
+    FILE *f;
+    int lines=0;
+    char ch;
+    f = fopen(filename, "r");
+    if(f==NULL){
+        perror("Error while reading file!");
+        exit(1);
+    }
+
+    //count number of lines in the text file
+    while((ch=fgetc(f))!=EOF)
+    {
+        if (ch=='\n') { lines++; }
+    }
+    
     //get random line from the number of lines
     srand(time(0));
     int randomline = rand() % (lines);
@@ -66,7 +90,6 @@ char* get_random_quote(const char *filename, size_t *len) {
     char current[256];
     selected[0] = '\0'; /* Don't crash if file is empty */
 
-    f = fopen(filename, "r");
     int i = 0;
     while(i <= randomline){
         fgets(current, sizeof(current), f);
@@ -84,8 +107,14 @@ char* get_random_quote(const char *filename, size_t *len) {
     return strdup(selected);
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
+    if (argc != 3) {
+        fprintf(stderr, "usage: client hostname\n");
+        exit(1);
+    }
+
+    check_file(argv[2]);
     size_t len;
     int sockfd, new_fd;  // listen on sock_fd, new connection on new_fd
     struct addrinfo hints, *servinfo, *p;
@@ -101,7 +130,7 @@ int main(void)
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE; // use my IP
 
-    if ((rv = getaddrinfo(NULL, PORT, &hints, &servinfo)) != 0) {
+    if ((rv = getaddrinfo(NULL, argv[1], &hints, &servinfo)) != 0) {
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
         return 1;
     }
@@ -166,7 +195,7 @@ int main(void)
 
         if (!fork()) { // this is the child process
             close(sockfd); // child doesn't need the listener
-            if (send(new_fd, get_random_quote("qotd.txt", &len), len, 0) == -1)
+            if (send(new_fd, get_random_quote(argv[2], &len), len, 0) == -1)
                 perror("send");
             close(new_fd);
             exit(0);
