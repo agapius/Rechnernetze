@@ -59,6 +59,7 @@ check_file(const char *filename){
         perror("Empty file!");
         exit(1);
     }
+    fclose(f);
 }
 
 
@@ -79,7 +80,8 @@ char* get_random_quote(const char *filename, size_t *len) {
     {
         if (ch=='\n') { lines++; }
     }
-    
+    fclose(f);
+    f = fopen(filename, "r");
     //get random line from the number of lines
     srand(time(0));
     int randomline = rand() % (lines);
@@ -114,7 +116,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    check_file(argv[2]);
+    //check_file(argv[2]);
     size_t len;
     int sockfd, new_fd;  // listen on sock_fd, new connection on new_fd
     struct addrinfo hints, *servinfo, *p;
