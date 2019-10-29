@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
     }
      */
 
-    // loop through all the results and connect to the first we can (DNS server returns multiple IP adresses in different order to do load balancing)
+    // loop through all the results and connect to the first we can (DNS server returns multiple IP addresses in order to do load balancing)
     for (p = servinfo; p != NULL; p = p->ai_next) {
         //build sockfd
         if ((sockfd = socket(p->ai_family, p->ai_socktype,
