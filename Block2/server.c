@@ -38,23 +38,22 @@ void *get_in_addr(struct sockaddr *sa)
     return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
-//check file
+//check if file is present and if its not empty
 check_file(const char *filename){
     FILE *f;
     int lines=0;
     char ch;
+    //check if file is found
     f = fopen(filename, "r");
     if(f==NULL){
         perror("Error while reading file!");
         exit(1);
     }
-
-    //count number of lines in the text file
+    //count number of lines in the text file to check if file is empty
     while((ch=fgetc(f))!=EOF)
     {
         if (ch=='\n') { lines++; }
     }
-
     if(lines==0){
         perror("Empty file!");
         exit(1);
@@ -69,19 +68,15 @@ char* get_random_quote(const char *filename, size_t *len) {
     FILE *f;
     int lines=0;
     char ch;
-    f = fopen(filename, "r");
-    if(f==NULL){
-        perror("Error while reading file!");
-        exit(1);
-    }
 
     //count number of lines in the text file
+    f = fopen(filename, "r");
     while((ch=fgetc(f))!=EOF)
     {
         if (ch=='\n') { lines++; }
     }
     fclose(f);
-    f = fopen(filename, "r");
+
     //get random line from the number of lines
     srand(time(0));
     int randomline = rand() % (lines);
@@ -92,20 +87,23 @@ char* get_random_quote(const char *filename, size_t *len) {
     char current[256];
     selected[0] = '\0'; /* Don't crash if file is empty */
 
+    //choose selected quote
+    f = fopen(filename, "r");
     int i = 0;
     while(i <= randomline){
         fgets(current, sizeof(current), f);
         strcpy(selected, current);
         i++;
     }
-
     fclose(f);
+
+    //'cuts' the array by replacing the \n announcing the end of the line/quote with a null termination
     selectlen = strlen(selected);
     if (selectlen > 0 && selected[selectlen-1] == '\n') {
         selected[selectlen-1] = '\0';
     }
     *len = selectlen;
-    printf(strdup(selected));
+
     return strdup(selected);
 }
 
@@ -116,7 +114,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    //check_file(argv[2]);
+    check_file(argv[2]);
     size_t len;
     int sockfd, new_fd;  // listen on sock_fd, new connection on new_fd
     struct addrinfo hints, *servinfo, *p;
