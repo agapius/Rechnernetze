@@ -14,7 +14,7 @@
 
 int main(int argc, char *argv[]) {
     int sockfd, numbytes;
-    char buf[MAXDATASIZE];
+    char *buf[MAXDATASIZE];
     struct addrinfo hints, *servinfo, *p;
     int rv;
     char s[INET6_ADDRSTRLEN];
@@ -69,9 +69,11 @@ int main(int argc, char *argv[]) {
 
     //read bytes from socket into buf - deletes from socket after read to buf?
     while ((numbytes = recv(sockfd, buf, MAXDATASIZE - 1, 0)) > 0) {
-        buf[numbytes] = '\0';
+        //buf[numbytes] = '\0';
         //print out the quote that was read into buf
-        printf("%s", buf);
+        //printf("%s", buf);
+        fwrite(buf, 1, numbytes,stdout);
+
     }
     if (numbytes == -1) {
         perror("recv");
