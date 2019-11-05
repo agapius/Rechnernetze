@@ -128,9 +128,9 @@ int main(int argc, char *argv[])
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags = AI_PASSIVE; // use my IP
+    hints.ai_flags = AI_PASSIVE; // hier wichtig ai passive zu setzen, damit server nicht nur localhost entgegennimmt (ermittelt welche ip adresse ich benutzen möchte (für bind))
 
-    if ((rv = getaddrinfo(NULL, argv[1], &hints, &servinfo)) != 0) {
+    if ((rv = getaddrinfo(NULL, argv[1], &hints, &servinfo)) != 0) { //getaddrinfo gibt uns eigene ip und port
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
         return 1;
     }
@@ -148,7 +148,8 @@ int main(int argc, char *argv[])
             perror("setsockopt");
             exit(1);
         }
-
+    //bind: mit bind belege ich einen port und eine ip (server hat mögl. 20 netzwerkkarten) funtioniert nicht, wenn port schon belegt ist
+    //server läuft auf maschine mit ip adressen und ports - das programm server möchte sich jetzt an eine ip und einen port verbinden
         if (bind(sockfd, p->ai_addr, p->ai_addrlen) == -1) {
             close(sockfd);
             perror("server: bind");
@@ -165,6 +166,8 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
+    //Im Backlog steht die zahl, wie viele Adressen mein Server annehmen kann.
+    // Es wird zwar immer nur eine angenommen, aber ggf werden die anderen in eine cue gepackt.
     if (listen(sockfd, BACKLOG) == -1) {
         perror("listen");
         exit(1);

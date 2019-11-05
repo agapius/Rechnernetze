@@ -25,8 +25,8 @@ int main(int argc, char *argv[]) {
     }
 
     memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_UNSPEC; //IPV4 or IPV6
-    hints.ai_socktype = SOCK_STREAM; //specifies Sock type to sequenced, reliable connection-based stream
+    hints.ai_family = AF_UNSPEC; //IPV4 or IPV6 ist uns egal
+    hints.ai_socktype = SOCK_STREAM; //specifies Sock type to sequenced, reliable connection-based stream (TCP benutzen)
 
     //print error message if connection not possible
     if ((rv = getaddrinfo(argv[1], argv[2], &hints, &servinfo)) != 0) {
